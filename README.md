@@ -1,5 +1,5 @@
 - Cài đặt:
-  chạy run.bat lần đầu để tải môi trường python
+  chạy run.bat lần đầu để cài đặt môi trường python (đợi vài phút để tự tải)
 
 - Project sử dụng dữ liệu mô phỏng để kiểm tra pipeline, nếu muốn sử dụng dữ liệu thật thì hãy đảm bảo tên và các trường trong file csv giống nhau
 - Project sẽ cập nhật dữ liệu mỗi tháng theo thứ tự 01_top2000.py -> 02_lastfm.py -> 03_merge.py -> file.pbix
