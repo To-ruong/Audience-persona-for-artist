@@ -1,3 +1,4 @@
+- Hỗ trợ hệ điều hành Windows
 - Cài đặt:
   chạy run.bat lần đầu để cài đặt môi trường python (đợi vài phút để tự tải)
 
