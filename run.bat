@@ -2,6 +2,27 @@
 chcp 65001 > nul
 setlocal EnableDelayedExpansion
 
+:: 0. KIỂM TRA VÀ CÀI ĐẶT MÔI TRƯỜNG PYTHON
+if not exist "venv\Scripts\python.exe" (
+    :: Kiểm tra Python hệ thống, nếu chưa có thì cài đặt ẩn qua winget
+    python --version >nul 2>&1
+    if !errorlevel! neq 0 (
+        winget install -e --id Python.Python.3.11 --accept-package-agreements --accept-source-agreements --silent >nul 2>&1
+        set "PATH=%PATH%;%~dp0python\;%~dp0python\Scripts\"
+    )
+    
+    :: Tạo môi trường ảo tên là "venv"
+    python -m venv venv >nul 2>&1
+    
+    :: Kích hoạt, nâng cấp pip và cài đặt thư viện
+    call "venv\Scripts\activate.bat" >nul 2>&1
+    python -m pip install --upgrade pip >nul 2>&1
+    pip install pandas requests >nul 2>&1
+    
+    :: Thoát kích hoạt để không ảnh hưởng luồng bên dưới
+    call "venv\Scripts\deactivate.bat" >nul 2>&1
+)
+
 :: 1. Lấy tháng hiện tại
 for /f %%i in ('powershell -NoProfile -Command "(Get-Date).ToString('MM')"') do set "current_month=%%i"
 
@@ -26,29 +47,29 @@ if /I "!current_month!"=="!last_month!" (
     goto open_powerbi
 )
 
-echo [Thông báo] Phát hiện THÁNG MỚI (%current_month%)! Bắt đầu chạy dữ liệu...
+echo new cycle
 
-:: 4. Chạy các file Python tuần tự
-echo Đang chạy file 01...
-python\Scripts\python.exe 01_top2000.py
+:: 4. Chạy các file Python tuần tự sử dụng môi trường ảo venv
+echo running file 01...
+venv\Scripts\python.exe 01_top2000.py
 if errorlevel 1 (
-    echo Lỗi ở 01_top2000.py
+    echo error: 01_top2000.py
     pause
     exit /b 1
 )
 
-echo Đang chạy file 02...
-python\Scripts\python.exe 02_lastfm.py
+echo running file 02...
+venv\Scripts\python.exe 02_lastfm.py
 if errorlevel 1 (
-    echo Lỗi ở 02_lastfm.py
+    echo error: 02_lastfm.py
     pause
     exit /b 1
 )
 
-echo Đang chạy file 03...
-python\Scripts\python.exe 03_merge.py
+echo running file 03...
+venv\Scripts\python.exe 03_merge.py
 if errorlevel 1 (
-    echo Lỗi ở 03_merge.py
+    echo error: 03_merge.py
     pause
     exit /b 1
 )
@@ -57,7 +78,7 @@ if errorlevel 1 (
 echo %current_month%>"%history_file%"
 
 :open_powerbi
-echo Đang kích hoạt Power BI và tự động Refresh...
+echo running Power BI and Refresh...
 start "" wscript.exe "refresh_powerbi.vbs"
 
 pause
